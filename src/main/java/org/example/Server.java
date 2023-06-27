@@ -30,6 +30,7 @@ public class Server {
         BufferedWriter writer = new BufferedWriter(new FileWriter(INFOPORTDIR));
         writer.write(HOSTNAME + " " + portNAME);
         writer.flush();
+        writer.close();
 
 
         serverSocket = new ServerSocket(portNAME);

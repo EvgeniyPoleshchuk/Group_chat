@@ -11,14 +11,11 @@ public class UserList extends Thread {
     private PrintWriter printWriter;
     private Logger logger = Logger.getInstance();
 
-
-
     public UserList(Socket user) throws Exception {
         socket = user;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         printWriter = new PrintWriter(socket.getOutputStream());
     }
-
     @Override
     public void run() {
         try {
