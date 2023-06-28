@@ -42,7 +42,7 @@ public class Client {
             while (true){
                 String massage = reader.readLine();
                 if(massage.equals("exit")){
-                    out.println("Пользователь сьебал с чата");
+                    out.println("Пользователь ушел с чата");
                     isInterrupted= false;
                     closeable();
                     break;
