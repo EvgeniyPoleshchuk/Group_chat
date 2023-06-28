@@ -21,11 +21,14 @@ public class Client {
             clientSocket = new Socket(hostName,port);
             out = new PrintWriter(clientSocket.getOutputStream(),true);
             inputMassage = new Scanner(clientSocket.getInputStream());
+            readMassage();
+            sendMassage();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }finally {
+            closeable();
         }
-        readMassage();
-        sendMassage();
+
 
     }
     public void readMassage(){
@@ -44,7 +47,6 @@ public class Client {
                 if(massage.equals("exit")){
                     out.println("Пользователь ушел с чата");
                     isInterrupted= false;
-                    closeable();
                     break;
                 }
                 out.println(massage);

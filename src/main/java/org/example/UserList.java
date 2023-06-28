@@ -39,7 +39,8 @@ public class UserList implements Runnable{
                     logger.LogWriter("user",userMassage);
                 }
             }
-        } catch (RuntimeException e) {
+            Thread.sleep(100);
+        } catch (RuntimeException | InterruptedException e) {
             throw new RuntimeException();
         }finally {
           this.close();
