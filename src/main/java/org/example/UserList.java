@@ -4,43 +4,62 @@ import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
-public class UserList extends Thread {
+public class UserList implements Runnable{
     private Socket socket;
-    private BufferedReader bufferedReader;
+    private Scanner massage;
     private PrintWriter printWriter;
     private Logger logger = Logger.getInstance();
+    private Server server;
 
-    public UserList(Socket user) throws Exception {
-        socket = user;
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        printWriter = new PrintWriter(socket.getOutputStream());
-    }
-    @Override
-    public void run() {
+    public UserList(Socket user,Server server) {
         try {
-            send("Hello : Enter your name");
-            String name = bufferedReader.readLine();
-            send("Hello " + name);
-            while (socket.isConnected()) {
-                String read = bufferedReader.readLine();
-                if (read.equals("exit")) {
-                    break;
-                }
-                logger.LogWriter(name,read);
-                for (UserList e : Server.clients) {
-                    e.send(name + " : " + read);
-                }
-            }
-        } catch (Exception e) {
+            this.server = server;
+            this.socket = user;
+            this.massage = new Scanner(socket.getInputStream());
+            this.printWriter = new PrintWriter(socket.getOutputStream());
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    @Override
+    public void run() {
+        try {
+            while (true){
+                server.sendMassageAllUser("Server : new user is connect");
+                logger.LogWriter("Server : ", "new user is connect "
+                        + socket.getLocalAddress().toString());
+                break;
+            }
+            while (true) {
+                if (massage.hasNext()) {
+                    String userMassage = massage.nextLine();
+                    if (userMassage.equals("exit")) {
+                        break;
+                    }
+                    server.sendMassageAllUser(userMassage);
+                    logger.LogWriter("user",userMassage);
+                }
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException();
+        }finally {
+          close();
+        }
+    }
     public void send(String massage) {
         printWriter.println(massage);
         printWriter.flush();
     }
-
+    public void close(){
+        server.remove(this);
+        try {
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
