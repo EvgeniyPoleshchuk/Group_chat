@@ -17,7 +17,6 @@ public class Client {
 
 
     public Client(String hostName, int port){
-
         try {
             clientSocket = new Socket(hostName,port);
             out = new PrintWriter(clientSocket.getOutputStream(),true);
@@ -28,14 +27,6 @@ public class Client {
         readMassage();
         sendMassage();
 
-        out.close();
-        inputMassage.close();
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
     }
     public void readMassage(){
         new Thread(() -> {
@@ -43,17 +34,17 @@ public class Client {
                 String massage = inputMassage.nextLine();
                 System.out.println(massage);
             }
+            inputMassage.close();
         }).start();
-
     }
     public void sendMassage(){
         try {
             while (true){
                 String massage = reader.readLine();
                 if(massage.equals("exit")){
-                    out.println("Пользователь ушел с чата");
+                    out.println("Пользователь сьебал с чата");
                     isInterrupted= false;
-                    reader.close();
+                    closeable();
                     break;
                 }
                 out.println(massage);
@@ -61,7 +52,17 @@ public class Client {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+    }
+    public void closeable(){
+        try {
+            inputMassage.close();
+            reader.close();
+            out.close();
+            clientSocket.close();
+        }
+        catch (Exception e){
+            throw new RuntimeException();
+        }
 
     }
 

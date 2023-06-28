@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,15 +18,22 @@ public class Server {
     private static final String HOSTNAME = "localhost";
 
 
-    public Server(int port) throws IOException {
-        createFiles(port);
-        serverSocket = new ServerSocket(port);
-        System.out.println("Server starting");
-        while (true) {
-            UserList list = new UserList(serverSocket.accept(), this);
-            clients.add(list);
-            new Thread(list).start();
+
+    public Server(int port)  {
+        try {
+            createFiles(port);
+            serverSocket = new ServerSocket(port);
+            System.out.println("Server starting");
+            while (true) {
+                UserList newUser = new UserList(serverSocket.accept(), this);
+                clients.add(newUser);
+                new Thread(newUser).start();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+
     }
 
 

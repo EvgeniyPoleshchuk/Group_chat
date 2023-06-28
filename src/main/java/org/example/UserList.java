@@ -18,7 +18,7 @@ public class UserList implements Runnable{
             this.server = server;
             this.socket = user;
             this.massage = new Scanner(socket.getInputStream());
-            this.printWriter = new PrintWriter(socket.getOutputStream());
+            this.printWriter = new PrintWriter(socket.getOutputStream(),true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -27,12 +27,8 @@ public class UserList implements Runnable{
     @Override
     public void run() {
         try {
-            while (true){
-                server.sendMassageAllUser("Server : new user is connect");
-                logger.LogWriter("Server : ", "new user is connect "
-                        + socket.getLocalAddress().toString());
-                break;
-            }
+            server.sendMassageAllUser("Server : new user is connect");
+            logger.LogWriter("Server : ", "new user is connect " + socket.getLocalAddress().toString());
             while (true) {
                 if (massage.hasNext()) {
                     String userMassage = massage.nextLine();
@@ -46,16 +42,15 @@ public class UserList implements Runnable{
         } catch (RuntimeException e) {
             throw new RuntimeException();
         }finally {
-          close();
+          this.close();
         }
     }
     public void send(String massage) {
         printWriter.println(massage);
-        printWriter.flush();
     }
     public void close(){
-        server.remove(this);
         try {
+            server.remove(this);
             socket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
