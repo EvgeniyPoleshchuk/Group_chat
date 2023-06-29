@@ -8,65 +8,40 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
+
 public class Client {
-    private Scanner inputMassage;
-    private Socket clientSocket;
-    private PrintWriter out;
-    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-    boolean isInterrupted = true;
 
 
-    public Client(String hostName, int port){
-        try {
-            clientSocket = new Socket(hostName,port);
-            out = new PrintWriter(clientSocket.getOutputStream(),true);
-            inputMassage = new Scanner(clientSocket.getInputStream());
-            readMassage();
-            sendMassage();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }finally {
-            closeable();
-        }
+    boolean close = true;
+    public Client(String hostName, int port) {
+        try (Socket socket = new Socket(hostName, port);
+             Scanner inMassage = new Scanner(socket.getInputStream());
+             PrintWriter out = new PrintWriter(socket.getOutputStream());
+             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
 
+            new Thread(() -> {
+                while(close){
+                    String input = inMassage.nextLine();
+                    System.out.println(input);
+                }
+            }).start();
 
-    }
-    public void readMassage(){
-        new Thread(() -> {
-            while (isInterrupted) {
-                String massage = inputMassage.nextLine();
-                System.out.println(massage);
-            }
-            inputMassage.close();
-        }).start();
-    }
-    public void sendMassage(){
-        try {
-            while (true){
-                String massage = reader.readLine();
-                if(massage.equals("exit")){
-                    out.println("Пользователь ушел с чата");
-                    isInterrupted= false;
+            while (true) {
+                String outMassage = reader.readLine();
+                if(outMassage.equals("exit")){
+                    out.println("exit");
+                    close = false;
                     break;
                 }
-                out.println(massage);
+                out.println(outMassage);
+                out.flush();
             }
-        } catch (IOException e) {
+            Thread.sleep(1000);
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-    }
-    public void closeable(){
-        try {
-            inputMassage.close();
-            reader.close();
-            out.close();
-            clientSocket.close();
-        }
-        catch (Exception e){
-            throw new RuntimeException();
-        }
+
 
     }
-
 
 }

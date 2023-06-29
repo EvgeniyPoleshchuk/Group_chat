@@ -13,27 +13,33 @@ import java.util.List;
 public class Server {
     private static ArrayList<UserList> clients = new ArrayList<>();
     private static ServerSocket serverSocket;
-    private static final String LOG_DIR = "C:/test/log.txt";
-    private static final String INFO_PORT_DIR = "C:/test/port.txt";
+    private static final String LOG_DIR = "log.txt";
+    private static final String INFO_PORT_DIR = "port.txe";
     private static final String HOSTNAME = "localhost";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new Server(2000);
     }
-    public Server(int port)  {
+
+    public Server(int port) throws IOException {
+        createFiles(port);
+        serverSocket = new ServerSocket(port);
+        Socket clientSocket = null;
+        System.out.println("Server starting");
         try {
-            createFiles(port);
-            serverSocket = new ServerSocket(port);
-            System.out.println("Server starting");
             while (true) {
-                System.out.println(clients.size());
-                UserList newUser = new UserList(serverSocket.accept(), this);
+                clientSocket = serverSocket.accept();
+                UserList newUser = new UserList(clientSocket, this);
                 clients.add(newUser);
+                System.out.println(clients.size());
                 new Thread(newUser).start();
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            clientSocket.close();
+            serverSocket.close();
+
         }
 
 
@@ -54,8 +60,6 @@ public class Server {
     public void createFiles(int portName) throws IOException {
         File log = new File(LOG_DIR);
         File port = new File(INFO_PORT_DIR);
-        File dir = new File("C:/test");
-        dir.mkdir();
         try {
             if (log.createNewFile() && port.createNewFile()) {
                 System.out.println("ok");
