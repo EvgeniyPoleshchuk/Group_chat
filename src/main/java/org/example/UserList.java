@@ -2,8 +2,6 @@ package org.example;
 
 import java.io.*;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class UserList implements Runnable {
@@ -12,9 +10,12 @@ public class UserList implements Runnable {
     private PrintWriter printWriter;
     private Logger logger = Logger.getInstance();
     private Server server;
+    private String name;
+    private static int userCount;
 
     public UserList(Socket user, Server server) {
         try {
+            userCount++;
             this.server = server;
             this.socket = user;
             this.massage = new Scanner(socket.getInputStream());
@@ -27,27 +28,31 @@ public class UserList implements Runnable {
     @Override
     public void run() {
         try {
-            while (true) {
-                server.sendMassageAllUser("Server : new user is connect");
-                logger.LogWriter("Server : ", "new user is connect " + socket.getLocalAddress().toString());
-                break;
-            }
+            validName(); // Проверка имени на пустую строку
+
+                String ENTER_TO_CHAT = "Server : %s присоединился к чату";
+                server.sendMassageAllUser(String.format(ENTER_TO_CHAT, name));
+                logger.LogWriter(String.format(ENTER_TO_CHAT, name));
+                send("Пользователей онлайн: " + userCount);
+
+
             while (true) {
                     String userMassage = massage.nextLine();
-                    if (userMassage.equals("exit")) {
-                        server.sendMassageAllUser("User is disconected");
+                    if (userMassage.equalsIgnoreCase("exit")) {
+                        String EXIT = "Server : %s покинул чат";
+                        server.sendMassageAllUser(String.format(EXIT, name));
+                        logger.LogWriter(String.format(EXIT, name));
                         break;
                     } else {
-                        System.out.println(userMassage);
-                        server.sendMassageAllUser(userMassage);
-                        logger.LogWriter("user", userMassage);
+                        System.out.println(name + ": " + userMassage);
+                        server.sendMassageAllUser(name + ": " + userMassage);
+                        logger.LogWriter(name + ": " + userMassage);
                     }
                 }
-
             Thread.sleep(100);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             this.close();
         }
     }
@@ -58,6 +63,25 @@ public class UserList implements Runnable {
 
     public void close() {
         server.remove(this);
+        userCount--;
+        server.sendMassageAllUser("Пользователей онлайн :" + userCount);
+        try {
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
+    public void validName() {
+        while (true) {
+            send("Введите свое имя: ");
+            name = massage.nextLine();
+            if (!name.equals("")) {
+                break;
+            }
+            send("Имя не может быть пустым, попробуйте еще раз");
+        }
+
+    }
 }

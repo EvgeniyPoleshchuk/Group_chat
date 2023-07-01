@@ -11,37 +11,57 @@ import java.util.Scanner;
 
 public class Client {
 
+    private Socket socket;
+    private Scanner inMassage;
+    private PrintWriter out;
+    private BufferedReader outPutMassage;
 
-    boolean close = true;
-    public Client(String hostName, int port) {
-        try (Socket socket = new Socket(hostName, port);
-             Scanner inMassage = new Scanner(socket.getInputStream());
-             PrintWriter out = new PrintWriter(socket.getOutputStream());
-             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+    boolean END_READ_MASSAGE = true;
 
-            new Thread(() -> {
-                while(close){
-                    String input = inMassage.nextLine();
-                    System.out.println(input);
-                }
-            }).start();
+    public Client(String hostName, int port)  {
+        try {
+            socket = new Socket(hostName, port);
+            inMassage = new Scanner(socket.getInputStream());
+            out = new PrintWriter(socket.getOutputStream(),true);
+            outPutMassage = new BufferedReader(new InputStreamReader(System.in));
 
+        }catch (Exception e) {
+            throw new RuntimeException();
+        }
+        readMassage();
+        sendMassage();
+        try {
+            outPutMassage.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void readMassage() {
+        new Thread(() -> {
+            while (END_READ_MASSAGE) {
+                String input = inMassage.nextLine();
+                System.out.println(input);
+            }
+            inMassage.close();
+        }).start();
+    }
+
+    public void sendMassage() {
+        try {
             while (true) {
-                String outMassage = reader.readLine();
-                if(outMassage.equals("exit")){
+                String outMassage = outPutMassage.readLine();
+                if (outMassage.equals("exit")) {
                     out.println("exit");
-                    close = false;
+                    END_READ_MASSAGE = false;
                     break;
                 }
                 out.println(outMassage);
-                out.flush();
             }
-            Thread.sleep(1000);
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        }catch (Exception e){
+            throw new RuntimeException();
         }
 
-
     }
-
 }

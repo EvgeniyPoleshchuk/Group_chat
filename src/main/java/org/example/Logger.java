@@ -16,11 +16,11 @@ public class Logger {
         }
         return instance;
     }
-    public void LogWriter(String name,String massage)  {
+    public void LogWriter(String massage)  {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
         LocalDateTime time = LocalDateTime.now();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter("D:/Games/log.txt",true))) {
-            writer.write("[" + time.format(formatter) + "] " + name + ": " + massage + "\n");
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter("log.txt",true))) {
+            writer.write("[" + time.format(formatter) + "] " + massage + "\n");
             writer.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
