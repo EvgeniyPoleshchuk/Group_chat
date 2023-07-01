@@ -29,13 +29,10 @@ public class UserList implements Runnable {
     public void run() {
         try {
             validName(); // Проверка имени на пустую строку
-
                 String ENTER_TO_CHAT = "Server : %s присоединился к чату";
                 server.sendMassageAllUser(String.format(ENTER_TO_CHAT, name));
                 logger.LogWriter(String.format(ENTER_TO_CHAT, name));
                 send("Пользователей онлайн: " + userCount);
-
-
             while (true) {
                     String userMassage = massage.nextLine();
                     if (userMassage.equalsIgnoreCase("exit")) {
